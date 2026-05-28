@@ -73,7 +73,7 @@ module WorkOrders
 
       normalized_attributes = normalize_analysis_attributes(analysis_attributes)
 
-      work_order.create_work_order_analysis!(normalized_attributes)
+      work_order.work_order_analyses.create!(normalized_attributes)
     rescue StandardError
       nil
     end

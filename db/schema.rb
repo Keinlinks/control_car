@@ -55,7 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_171500) do
     t.json "recommended_steps", default: [], null: false
     t.datetime "updated_at", null: false
     t.integer "work_order_id", null: false
-    t.index ["work_order_id"], name: "index_work_order_analyses_on_work_order_id", unique: true
+    t.index ["work_order_id"], name: "index_work_order_analyses_on_work_order_id"
   end
 
   create_table "work_orders", force: :cascade do |t|
