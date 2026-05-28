@@ -1,6 +1,19 @@
 class WorkOrderAnalysesController < ApplicationController
   MAX_PAGE_SIZE = 100
 
+  def create
+    result = WorkOrders::Reanalyze.call(
+      work_order_id: params[:work_order_id],
+      ai_service: AiServices::MockAiService.new
+    )
+
+    render json: { workOrderAnalysis: serialize_analysis(result.work_order_analysis) }, status: :created
+  rescue ActiveRecord::RecordNotFound
+    render json: { errors: ["work_order not found"] }, status: :not_found
+  rescue WorkOrders::Reanalyze::Error
+    render json: { errors: ["work_order analysis could not be generated"] }, status: :internal_server_error
+  end
+
   def index
     work_order = WorkOrder.find(params[:work_order_id])
 

@@ -53,7 +53,7 @@ module WorkOrders
         work_order_analysis:
       )
     rescue StandardError => error
-      Rails.logger.warning(
+      Rails.logger.warn(
         "work_order.create failed error_class=#{error.class.name} message=#{error.message.inspect}"
       )
       Rails.logger.debug(error.backtrace.join("\n")) if error.backtrace.present?

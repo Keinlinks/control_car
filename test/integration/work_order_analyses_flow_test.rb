@@ -1,6 +1,35 @@
 require "test_helper"
 
 class WorkOrderAnalysesFlowTest < ActionDispatch::IntegrationTest
+  test "creates a new analysis for an existing work order" do
+    work_order = WorkOrder.create!(
+      license_plate: "ABCD12",
+      customer_name: "Jane Doe",
+      mileage: 54_321,
+      reason_for_entry: "Engine noise",
+      priority: :high
+    )
+
+    work_order.work_order_analyses.create!(
+      estimated_category: "older",
+      estimated_priority: :low,
+      possible_failures: ["Older issue"],
+      recommended_steps: ["Older step"]
+    )
+
+    assert_difference("WorkOrderAnalysis.count", 1) do
+      post work_order_work_order_analyses_path(work_order)
+    end
+
+    assert_response :created
+
+    response_body = JSON.parse(response.body)
+
+    assert_equal work_order.id, response_body["workOrderAnalysis"]["work_order_id"]
+    assert_equal "engine", response_body["workOrderAnalysis"]["estimated_category"]
+    assert_equal 2, work_order.work_order_analyses.count
+  end
+
   test "returns paginated analyses ordered by created_at desc" do
     work_order = WorkOrder.create!(
       license_plate: "ABCD12",
@@ -57,6 +86,35 @@ class WorkOrderAnalysesFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
     assert_equal ["work_order not found"], JSON.parse(response.body)["errors"]
+  end
+
+  test "returns an error when analysis generation fails" do
+    work_order = WorkOrder.create!(
+      license_plate: "ZXCV98",
+      customer_name: "John Doe",
+      mileage: 12_345,
+      reason_for_entry: "Brake check",
+      priority: :low
+    )
+
+    failing_ai_service = Object.new
+    failing_ai_service.define_singleton_method(:generate) do |prompt:, input: nil, options: {}|
+      raise StandardError, "AI failure"
+    end
+
+    original_new = AiServices::MockAiService.method(:new)
+    AiServices::MockAiService.define_singleton_method(:new) { failing_ai_service }
+
+    begin
+      assert_no_difference("WorkOrderAnalysis.count") do
+        post work_order_work_order_analyses_path(work_order)
+      end
+    ensure
+      AiServices::MockAiService.define_singleton_method(:new, original_new)
+    end
+
+    assert_response :internal_server_error
+    assert_equal ["work_order analysis could not be generated"], JSON.parse(response.body)["errors"]
   end
 
   test "returns validation errors for invalid pagination values" do
