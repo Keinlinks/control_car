@@ -73,4 +73,19 @@ class WorkOrderAnalysesFlowTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_equal ["page and pageSize must be greater than 0"], JSON.parse(response.body)["errors"]
   end
+
+  test "returns validation errors when pageSize exceeds the limit" do
+    work_order = WorkOrder.create!(
+      license_plate: "ZXCV98",
+      customer_name: "John Doe",
+      mileage: 12_345,
+      reason_for_entry: "Brake check",
+      priority: :low
+    )
+
+    get work_order_work_order_analyses_path(work_order), params: { page: 1, pageSize: 101 }
+
+    assert_response :unprocessable_content
+    assert_equal ["pageSize must be less than or equal to 100"], JSON.parse(response.body)["errors"]
+  end
 end

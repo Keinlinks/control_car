@@ -1,9 +1,13 @@
 class WorkOrderAnalysesController < ApplicationController
+  MAX_PAGE_SIZE = 100
+
   def index
     work_order = WorkOrder.find(params[:work_order_id])
 
-    if page < 1 || page_size < 1
-      render json: { errors: ["page and pageSize must be greater than 0"] }, status: :unprocessable_content
+    validation_error = pagination_validation_error
+
+    if validation_error
+      render json: { errors: [validation_error] }, status: :unprocessable_content
       return
     end
 
@@ -30,6 +34,13 @@ class WorkOrderAnalysesController < ApplicationController
 
   def page_size
     params.fetch(:pageSize, 10).to_i
+  end
+
+  def pagination_validation_error
+    return "page and pageSize must be greater than 0" if page < 1 || page_size < 1
+    return "pageSize must be less than or equal to #{MAX_PAGE_SIZE}" if page_size > MAX_PAGE_SIZE
+
+    nil
   end
 
   def serialize_analysis(analysis)

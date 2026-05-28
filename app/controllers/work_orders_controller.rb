@@ -1,4 +1,26 @@
 class WorkOrdersController < ApplicationController
+  MAX_PAGE_SIZE = 100
+
+  def index
+    validation_error = pagination_validation_error
+
+    if validation_error
+      render json: { errors: [validation_error] }, status: :unprocessable_content
+      return
+    end
+
+    work_orders = WorkOrder.order(created_at: :desc)
+                          .offset((page - 1) * page_size)
+                          .limit(page_size)
+
+    render json: {
+      items: work_orders.map { |work_order| serialize_work_order_summary(work_order) },
+      page: page,
+      pageSize: page_size,
+      total: WorkOrder.count
+    }, status: :ok
+  end
+
   def create
     work_order = WorkOrder.new(work_order_params)
     work_order.validate
@@ -20,6 +42,21 @@ class WorkOrdersController < ApplicationController
   end
 
   private
+
+  def page
+    params.fetch(:page, 1).to_i
+  end
+
+  def page_size
+    params.fetch(:pageSize, 10).to_i
+  end
+
+  def pagination_validation_error
+    return "page and pageSize must be greater than 0" if page < 1 || page_size < 1
+    return "pageSize must be less than or equal to #{MAX_PAGE_SIZE}" if page_size > MAX_PAGE_SIZE
+
+    nil
+  end
 
   def work_order_params
     params.expect(
@@ -75,6 +112,19 @@ class WorkOrdersController < ApplicationController
           updated_at: image.updated_at
         }
       end
+    }
+  end
+
+  def serialize_work_order_summary(work_order)
+    {
+      id: work_order.id,
+      license_plate: work_order.license_plate,
+      customer_name: work_order.customer_name,
+      mileage: work_order.mileage,
+      reason_for_entry: work_order.reason_for_entry,
+      priority: work_order.priority,
+      created_at: work_order.created_at,
+      updated_at: work_order.updated_at
     }
   end
 
