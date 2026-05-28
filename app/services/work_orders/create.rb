@@ -24,6 +24,7 @@ module WorkOrders
       @image_files = Array(image_files).compact_blank
       @image_storage = image_storage
       @ai_service = ai_service
+      @stored_paths = []
     end
 
     def call
@@ -38,6 +39,9 @@ module WorkOrders
         work_order:,
         work_order_analysis: persist_analysis(work_order)
       )
+    rescue StandardError
+      enqueue_orphaned_images_cleanup
+      raise
     end
 
     private
@@ -48,9 +52,17 @@ module WorkOrders
           uploaded_file:,
           work_order_id: work_order.id
         )
+        @stored_paths << storage_path
 
         work_order.images.create!(storage_path:)
       end
+    end
+
+    def enqueue_orphaned_images_cleanup
+      storage_paths = @stored_paths.compact_blank
+      return if storage_paths.empty?
+
+      DeleteOrphanedImagesJob.perform_later(@image_storage.class.name, storage_paths)
     end
 
     def persist_analysis(work_order)

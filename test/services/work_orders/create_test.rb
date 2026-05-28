@@ -2,11 +2,18 @@ require "test_helper"
 
 module WorkOrders
   class CreateTest < ActiveSupport::TestCase
+    include ActiveJob::TestHelper
+
     FakeStorage = Struct.new(:stored_files, keyword_init: true) do
       def store(uploaded_file:, work_order_id:)
         self.stored_files ||= []
         stored_files << { filename: uploaded_file.original_filename, work_order_id: work_order_id }
         "fake/#{work_order_id}/#{uploaded_file.original_filename}"
+      end
+
+      def delete(storage_path:)
+        self.stored_files ||= []
+        stored_files << { deleted_path: storage_path }
       end
     end
 
@@ -84,6 +91,41 @@ module WorkOrders
 
       assert_not_nil result.work_order
       assert_nil result.work_order_analysis
+    end
+
+    test "enqueues orphaned images cleanup when persistence fails after upload" do
+      failing_create_class = Class.new(Create) do
+        private
+
+        def persist_images!(work_order)
+          super
+          raise StandardError, "failure after upload"
+        end
+      end
+
+      image_storage = FakeStorage.new
+
+      clear_enqueued_jobs
+
+      assert_raises(StandardError) do
+        failing_create_class.call(
+          work_order_attributes: {
+            license_plate: "QWER12",
+            customer_name: "Mary Doe",
+            mileage: 7_000,
+            reason_for_entry: "Inspection",
+            priority: "low"
+          },
+          image_files: [fixture_file_upload("sample-upload.jpg", "image/jpeg")],
+          image_storage: image_storage,
+          ai_service: FakeAiService.new(response: {})
+        )
+      end
+
+      assert_equal 1, enqueued_jobs.size
+      assert_equal DeleteOrphanedImagesJob, enqueued_jobs.first[:job]
+      assert_equal image_storage.class.name, enqueued_jobs.first[:args][0]
+      assert_equal ["fake/1/sample-upload.jpg"], enqueued_jobs.first[:args][1]
     end
 
     private

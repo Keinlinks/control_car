@@ -13,6 +13,12 @@ module ImageStorages
       relative_path.to_s
     end
 
+    def delete(storage_path:)
+      absolute_path = Rails.root.join("storage", storage_path)
+
+      File.delete(absolute_path) if File.exist?(absolute_path)
+    end
+
     private
 
     def build_storage_path(work_order_id, uploaded_file)
