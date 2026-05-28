@@ -2,6 +2,7 @@ class WorkOrder < EntityRecord
   enum :priority, { low: 0, high: 1 }
 
   has_many :images, dependent: :destroy
+  has_one :work_order_analysis, dependent: :destroy
 
   validates :license_plate, presence: true
   validates :customer_name, presence: true

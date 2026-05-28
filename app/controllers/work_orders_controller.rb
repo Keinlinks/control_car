@@ -9,13 +9,14 @@ class WorkOrdersController < ApplicationController
       return
     end
 
-    work_order = WorkOrders::Create.call(
+    result = WorkOrders::Create.call(
       work_order_attributes: work_order.attributes.symbolize_keys.except("id", :id, "created_at", :created_at, "updated_at", :updated_at),
       image_files: image_files,
-      image_storage: ImageStorages::LocalImageStorage.new
+      image_storage: ImageStorages::LocalImageStorage.new,
+      ai_service: AiServices::MockAiService.new
     )
 
-    render json: serialize_work_order(work_order), status: :created
+    render json: serialize_result(result), status: :created
   end
 
   private
@@ -48,6 +49,13 @@ class WorkOrdersController < ApplicationController
     uploaded_file.respond_to?(:original_filename) && uploaded_file.respond_to?(:read)
   end
 
+  def serialize_result(result)
+    {
+      workOrder: serialize_work_order(result.work_order),
+      workOrderAnalysis: serialize_work_order_analysis(result.work_order_analysis)
+    }
+  end
+
   def serialize_work_order(work_order)
     {
       id: work_order.id,
@@ -67,6 +75,19 @@ class WorkOrdersController < ApplicationController
           updated_at: image.updated_at
         }
       end
+    }
+  end
+
+  def serialize_work_order_analysis(work_order_analysis)
+    return nil if work_order_analysis.nil?
+
+    {
+      id: work_order_analysis.id,
+      estimated_category: work_order_analysis.estimated_category,
+      possible_failures: work_order_analysis.possible_failures,
+      estimated_priority: work_order_analysis.estimated_priority,
+      recommended_steps: work_order_analysis.recommended_steps,
+      work_order_id: work_order_analysis.work_order_id
     }
   end
 end

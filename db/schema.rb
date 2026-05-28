@@ -47,6 +47,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_171500) do
     t.index ["work_order_id"], name: "index_images_on_work_order_id"
   end
 
+  create_table "work_order_analyses", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "estimated_category", null: false
+    t.integer "estimated_priority", null: false
+    t.json "possible_failures", default: [], null: false
+    t.json "recommended_steps", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.integer "work_order_id", null: false
+    t.index ["work_order_id"], name: "index_work_order_analyses_on_work_order_id", unique: true
+  end
+
   create_table "work_orders", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "customer_name"
@@ -60,4 +71,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_171500) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "images", "work_orders"
+  add_foreign_key "work_order_analyses", "work_orders"
 end

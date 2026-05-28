@@ -26,6 +26,14 @@ class WorkOrderTest < ActiveSupport::TestCase
     assert_equal Image, association.klass
   end
 
+  test "has one work order analysis" do
+    association = WorkOrder.reflect_on_association(:work_order_analysis)
+
+    assert_not_nil association
+    assert_equal :has_one, association.macro
+    assert_equal WorkOrderAnalysis, association.klass
+  end
+
   test "inherits from entity record" do
     assert_equal EntityRecord, WorkOrder.superclass
   end
