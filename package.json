@@ -1,0 +1,11 @@
+{
+  "name": "control-car",
+  "version": "0.0.1",
+  "scripts": {
+    "install": "cd frontend && npm install && cd ../api && bundle install",
+    "start": "concurrently \"cd frontend && npx ng serve --host 0.0.0.0\" \"cd api && bundle exec rails server -p 3000\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.0"
+  }
+}

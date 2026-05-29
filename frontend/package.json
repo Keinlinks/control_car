@@ -1,6 +1,6 @@
 {
-  "name": "control-car",
-  "version": "0.0.0",
+  "name": "control-car-frontend",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
