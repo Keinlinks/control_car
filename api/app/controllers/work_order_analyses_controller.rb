@@ -63,6 +63,7 @@ class WorkOrderAnalysesController < ApplicationController
       possible_failures: analysis.possible_failures,
       estimated_priority: analysis.estimated_priority,
       recommended_steps: analysis.recommended_steps,
+      work_order_snapshot: analysis.work_order_snapshot,
       work_order_id: analysis.work_order_id,
       created_at: analysis.created_at,
       updated_at: analysis.updated_at

@@ -27,6 +27,16 @@ class WorkOrderAnalysesFlowTest < ActionDispatch::IntegrationTest
 
     assert_equal work_order.id, response_body["workOrderAnalysis"]["work_order_id"]
     assert_equal "engine", response_body["workOrderAnalysis"]["estimated_category"]
+    assert_equal(
+      {
+        "license_plate" => "ABCD12",
+        "customer_name" => "Jane Doe",
+        "mileage" => 54_321,
+        "reason_for_entry" => "Engine noise",
+        "priority" => "high"
+      },
+      response_body["workOrderAnalysis"]["work_order_snapshot"]
+    )
     assert_equal 2, work_order.work_order_analyses.count
   end
 

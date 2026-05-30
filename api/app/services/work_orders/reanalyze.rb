@@ -38,7 +38,7 @@ module WorkOrders
         "keys=#{analysis_attributes.to_h.keys.map(&:to_s).sort.join(",")}"
       )
 
-      work_order_analysis = work_order.work_order_analyses.create!(normalize_analysis_attributes(analysis_attributes))
+      work_order_analysis = work_order.work_order_analyses.create!(normalize_analysis_attributes(analysis_attributes, work_order))
       Rails.logger.info(
         "work_order.reanalyze completed work_order_id=#{work_order.id} analysis_id=#{work_order_analysis.id}"
       )
@@ -58,14 +58,25 @@ module WorkOrders
 
     private
 
-    def normalize_analysis_attributes(attributes)
+    def normalize_analysis_attributes(attributes, work_order)
       attributes = attributes.to_h.deep_symbolize_keys
 
       {
         estimated_category: attributes[:estimated_category],
         possible_failures: attributes[:possible_failures],
         estimated_priority: attributes[:estimated_priority],
-        recommended_steps: attributes[:recommended_steps]
+        recommended_steps: attributes[:recommended_steps],
+        work_order_snapshot: work_order_snapshot(work_order)
+      }
+    end
+
+    def work_order_snapshot(work_order)
+      {
+        license_plate: work_order.license_plate,
+        customer_name: work_order.customer_name,
+        mileage: work_order.mileage,
+        reason_for_entry: work_order.reason_for_entry,
+        priority: work_order.priority
       }
     end
   end

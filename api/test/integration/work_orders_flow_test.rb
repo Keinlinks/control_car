@@ -34,6 +34,7 @@ class WorkOrdersFlowTest < ActionDispatch::IntegrationTest
     assert_equal 2, response_body["workOrder"]["images"].size
     assert_equal "engine", response_body["workOrderAnalysis"]["estimated_category"]
     assert_equal "high", response_body["workOrderAnalysis"]["estimated_priority"]
+    assert_not_includes response_body["workOrderAnalysis"], "work_order_snapshot"
   end
 
   test "creates a work order without images" do

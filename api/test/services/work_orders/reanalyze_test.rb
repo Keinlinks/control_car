@@ -38,6 +38,16 @@ module WorkOrders
       assert_equal work_order.id, result.work_order.id
       assert_equal work_order.id, result.work_order_analysis.work_order_id
       assert_equal "engine", result.work_order_analysis.estimated_category
+      assert_equal(
+        {
+          "license_plate" => "ABCD12",
+          "customer_name" => "Jane Doe",
+          "mileage" => 54_321,
+          "reason_for_entry" => "Engine noise",
+          "priority" => "high"
+        },
+        result.work_order_analysis.reload.work_order_snapshot
+      )
     end
 
     test "raises a domain error when analysis generation fails" do

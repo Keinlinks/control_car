@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_28_171500) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_29_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -55,6 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_171500) do
     t.json "recommended_steps", default: [], null: false
     t.datetime "updated_at", null: false
     t.integer "work_order_id", null: false
+    t.json "work_order_snapshot", default: {}, null: false
     t.index ["work_order_id"], name: "index_work_order_analyses_on_work_order_id"
   end
 

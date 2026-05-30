@@ -4,7 +4,7 @@
 - bundle
 - Node.Js y Npm
 
-## Start Projects
+## Start both Projects
 
 ```bash
 git clone https://github.com/Keinlinks/control_car.git

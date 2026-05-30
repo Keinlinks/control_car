@@ -48,6 +48,20 @@ class WorkOrderAnalysisTest < ActiveSupport::TestCase
     assert_includes analysis.errors[:recommended_steps], "must be an array"
   end
 
+  test "requires work_order_snapshot to be a hash" do
+    analysis = WorkOrderAnalysis.new(
+      estimated_category: "electrical",
+      estimated_priority: :low,
+      possible_failures: ["Battery issue"],
+      recommended_steps: ["Run diagnostics"],
+      work_order_snapshot: "not-a-hash",
+      work_order: valid_work_order
+    )
+
+    assert_not analysis.valid?
+    assert_includes analysis.errors[:work_order_snapshot], "must be a hash"
+  end
+
   test "inherits from entity record" do
     assert_equal EntityRecord, WorkOrderAnalysis.superclass
   end
